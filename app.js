@@ -1,43 +1,40 @@
 let gameSeq = [];
 let userSeq = [];
-let colors = ["red", "blue", "green", "yellow"]; // ✅ match your HTML
+let colors = ["red", "blue", "green", "yellow"];
 
 let level = 0;
 let started = false;
-let highScore = 0; // 🏆 track high score
+let highScore = 0;
 
 let h2 = document.querySelector("h2");
-let highScoreDisplay = document.getElementById("highScore"); // <h3 id="highScore"></h3> in HTML
+let highScoreDisplay = document.getElementById("highScore");
 
-// Start game on keypress
-document.addEventListener("keypress", function () {
+// Start game on keypress or tap
+function startGame() {
   if (!started) {
-    console.log("Game started");
     started = true;
     levelup();
   }
-});
+}
+document.addEventListener("keypress", startGame);
+document.addEventListener("click", startGame);
 
 // Flash effect for game
 function btnFlash(btn) {
   if (!btn) return;
   btn.classList.add("btnflash");
-  setTimeout(function () {
-    btn.classList.remove("btnflash");
-  }, 500);
+  setTimeout(() => btn.classList.remove("btnflash"), 500);
 }
 
-// Flash effect for user clicks (faster)
+// Flash effect for user
 function userFlash(btn) {
   btn.classList.add("btnflash");
-  setTimeout(function () {
-    btn.classList.remove("btnflash");
-  }, 250);
+  setTimeout(() => btn.classList.remove("btnflash"), 250);
 }
 
 // Go to next level
 function levelup() {
-  userSeq = []; // reset user sequence each round
+  userSeq = [];
   level++;
   h2.innerText = `Level ${level}`;
 
@@ -46,15 +43,10 @@ function levelup() {
   let randbtn = document.querySelector(".btn." + randomcolor);
 
   gameSeq.push(randomcolor);
-
-  // Debugging logs
-  console.log("Game sequence:", gameSeq);
-  console.log("Random color:", randomcolor);
-
   btnFlash(randbtn);
 }
 
-// Check Answer
+// Check answer
 function checkAnswer(idx) {
   if (userSeq[idx] === gameSeq[idx]) {
     if (userSeq.length === gameSeq.length) {
@@ -66,39 +58,40 @@ function checkAnswer(idx) {
 
     // Flash red background
     document.body.style.backgroundColor = "red";
-    setTimeout(function () {
-      document.body.style.backgroundColor = "white";
+    setTimeout(() => {
+      document.body.style.backgroundColor = "#222";
     }, 200);
 
-    // 🏆 Update High Score if needed
+    // Update high score
     let score = level - 1;
     if (score > highScore) {
       highScore = score;
       highScoreDisplay.innerText = `High Score: ${highScore}`;
     }
 
-    h2.innerHTML = `Game Over! Your Score was <b>${score}</b>. Press any key to restart`;
+    h2.innerHTML = `Game Over! Your Score: <b>${score}</b>. Tap or press any key to restart`;
     reset();
   }
 }
 
-// When user clicks a button
-function btnpress() {
+// Handle user button press
+function btnpress(e) {
+  e.preventDefault(); // prevent double triggers on touch
   let btn = this;
   userFlash(btn);
 
-  // ✅ Use class, not id
-  let usercolor = btn.classList[1]; // "red", "blue", etc.
+  let usercolor = btn.classList[1];
   userSeq.push(usercolor);
 
   checkAnswer(userSeq.length - 1);
 }
 
-// Attach click events
+// Attach click & touch events to buttons
 let allbtns = document.querySelectorAll(".btn");
-for (let btn of allbtns) {
+allbtns.forEach(btn => {
   btn.addEventListener("click", btnpress);
-}
+  btn.addEventListener("touchstart", btnpress);
+});
 
 // Reset game
 function reset() {
